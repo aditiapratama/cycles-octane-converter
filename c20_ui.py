@@ -4,7 +4,7 @@ from bpy import context
 
 class c2oPanel(bpy.types.Panel):
     bl_idname = "c2opanel"
-    bl_label = "Cycles 2 Octane"
+    bl_label = "Cycles to Octane"
     bl_category = "C2O"
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
@@ -13,7 +13,6 @@ class c2oPanel(bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
-        col.label(text="C2O Convert")
         col.operator(
             "c2oconvert.diffuse",
             text="Convert",
