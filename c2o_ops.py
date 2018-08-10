@@ -2,6 +2,7 @@ import bpy
 import os
 
 
+
 def diffuse_convert(context):
     materials = [m for m in bpy.data.materials if m.use_nodes]
     for m in materials:
@@ -157,12 +158,25 @@ def glossy_convert(context):
         glossy_nodes = [n for n in nodes if n.type == 'BSDF_GLOSSY']
         for n in glossy_nodes:
             n_loc_x = n.location.x 
-            n_loc_y = n.location.y - 225
+            n_loc_y = n.location.y 
             n_color = n.inputs[0].default_value
             
             shader_oct_glossy = nodes.new('ShaderNodeOctGlossyMat')
             shader_oct_glossy.location = n_loc_x, n_loc_y
             shader_oct_glossy.inputs[0].default_value = n_color
+
+            n_inputs = n.inputs
+            i_links = [i for i in n_inputs]
+            for i in i_links:
+                i_links = i.links
+                for il in i_links:
+                    from_socket = il.from_socket
+
+            if n_inputs[0].is_linked:
+                links.new(
+                    shader_oct_glossy.inputs[0],
+                    from_socket
+                )
 
             n_outputs = n.outputs
             o_links = [o for o in n_outputs]
@@ -187,7 +201,7 @@ def principled_convert(context):
         principled_nodes = [n for n in nodes if n.type == 'BSDF_PRINCIPLED']
         for n in principled_nodes:
             n_loc_x = n.location.x 
-            n_loc_y = n.location.y - 225
+            n_loc_y = n.location.y 
             n_color = n.inputs[0].default_value
             n_specular = n.inputs['Specular'].default_value
             n_roughness = n.inputs['Roughness'].default_value
@@ -199,6 +213,50 @@ def principled_convert(context):
             shader_oct_glossy.inputs['Specular'].default_value = n_specular
             shader_oct_glossy.inputs['Roughness'].default_value = n_roughness
             shader_oct_glossy.inputs['Index'].default_value = n_ior
+
+            diff_input = n.inputs['Base Color']
+            i_links = [i for i in diff_input.links]
+            for i in i_links:
+                from_socket_diff = i.from_socket
+
+            if diff_input.is_linked:
+                links.new(
+                    shader_oct_glossy.inputs['Diffuse'],
+                    from_socket_diff
+                )
+
+            spec_input = n.inputs['Specular']
+            i_links = [i for i in spec_input.links]
+            for i in i_links:
+                from_socket_spec = i.from_socket
+
+            if spec_input.is_linked:
+                links.new(
+                    shader_oct_glossy.inputs['Specular'],
+                    from_socket_spec
+                )
+            
+            rough_input = n.inputs['Roughness']
+            i_links = [i for i in rough_input.links]
+            for i in i_links:
+                from_socket_rough = i.from_socket
+
+            if rough_input.is_linked:
+                links.new(
+                    shader_oct_glossy.inputs['Roughness'],
+                    from_socket_rough
+                )
+            
+            normal_input = n.inputs['Normal']
+            i_links = [i for i in normal_input.links]
+            for i in i_links:
+                from_socket_normal = i.from_socket
+
+            if normal_input.is_linked:
+                links.new(
+                    shader_oct_glossy.inputs['Normal'],
+                    from_socket_normal
+                )
 
             n_outputs = n.outputs
             o_links = [o for o in n_outputs]
@@ -260,6 +318,26 @@ class c2oDiffuseConvert(bpy.types.Operator):
         principled_convert(self)
         glass_convert(self)
         mixmat_convert(self)
+
+        objects = bpy.data.objects
+        obj = [o for o in objects if o.type == 'MESH']
+        for o in obj:
+            mesh_data = o.data
+            for poly in mesh_data.polygons:
+                if poly.use_smooth:
+                    materials = [mat for mat in mesh_data.materials\
+                                if mat.use_nodes]
+                    for mat in materials:
+                        nodes = mat.node_tree.nodes
+                        node_type = [
+                                "OCT_GLOSSY_MAT", 
+                                "OCT_DIFFUSE_MAT",
+                                "OCT_SPECULAR_MAT"]
+                        for node in nodes:
+                            if node.type in node_type:
+                                n_smooth = node.inputs['Smooth']
+                                n_smooth.default_value = True
+
 
         return {"FINISHED"}
 
