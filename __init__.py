@@ -6,7 +6,7 @@ bl_info = {
     "name": "Cycles to Octane Material Converter",
     "description": "Cycles to Octane Material Converter",
     "author": "Aditia A. Pratama",
-    "version": (0, 0, 2),
+    "version": (0, 0, 3),
     "blender": (2, 7, 9),
     "location": "",
     "warning": "This addon is still in development.",
