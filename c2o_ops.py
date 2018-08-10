@@ -2,7 +2,6 @@ import bpy
 import os
 
 
-
 def diffuse_convert(context):
     materials = [m for m in bpy.data.materials if m.use_nodes]
     for m in materials:
@@ -18,30 +17,27 @@ def diffuse_convert(context):
             shader_oct_diff.location = n_loc_x, n_loc_y
             shader_oct_diff.inputs[0].default_value = n_color
 
-            n_inputs = n.inputs
-            i_links = [i for i in n_inputs]
+            n_inputs = n.inputs[0]
+            i_links = [i for i in n_inputs.links]
             for i in i_links:
-                i_links = i.links
-                for il in i_links:
-                    from_socket = il.from_socket
+                from_socket = i.from_socket
 
-            if n_inputs[0].is_linked:
+            if n_inputs.is_linked:
                 links.new(
                     shader_oct_diff.inputs[0],
                     from_socket
                 )
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
+                to_socket = o.to_socket
             
-            links.new(
-                shader_oct_diff.outputs[0],
-                to_socket
-                )
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_diff.outputs[0],
+                    to_socket
+                    )
             nodes.remove(n)
 
 def mixmat_convert(context):
@@ -78,17 +74,16 @@ def mixmat_convert(context):
                     from_socket_2
                 )
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
+                to_socket = o.to_socket
             
-            links.new(
-                shader_oct_mix.outputs[0],
-                to_socket
-                )
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_mix.outputs[0],
+                    to_socket
+                    )
             nodes.remove(n)
 
 
@@ -107,17 +102,16 @@ def image_convert(context):
             shader_oct_img.location = n_loc_x, n_loc_y
             shader_oct_img.image = n_image
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
+                to_socket = o.to_socket
             
-            links.new(
-                shader_oct_img.outputs[0],
-                to_socket
-                )
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_img.outputs[0],
+                    to_socket
+                    )
             nodes.remove(n)
         
 def floatimg_convert(context):
@@ -136,17 +130,16 @@ def floatimg_convert(context):
             shader_oct_floatimg.location = n_loc_x, n_loc_y
             shader_oct_floatimg.image = n_image
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
-            
-            links.new(
-                shader_oct_floatimg.outputs[0],
-                to_socket
-                )
+                to_socket = o.to_socket
+
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_floatimg.outputs[0],
+                    to_socket
+                    )
             nodes.remove(n)
 
 def glossy_convert(context):
@@ -165,30 +158,27 @@ def glossy_convert(context):
             shader_oct_glossy.location = n_loc_x, n_loc_y
             shader_oct_glossy.inputs[0].default_value = n_color
 
-            n_inputs = n.inputs
-            i_links = [i for i in n_inputs]
+            n_inputs = n.inputs[0]
+            i_links = [i for i in n_inputs.links]
             for i in i_links:
-                i_links = i.links
-                for il in i_links:
-                    from_socket = il.from_socket
+                from_socket = i.from_socket
 
-            if n_inputs[0].is_linked:
+            if n_inputs.is_linked:
                 links.new(
                     shader_oct_glossy.inputs[0],
                     from_socket
                 )
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
-
-            links.new(
-                shader_oct_glossy.outputs[0],
-                to_socket
-            )
+                to_socket = o.to_socket
+            
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_glossy.outputs[0],
+                    to_socket
+                )
             nodes.remove(n)
 
 
@@ -258,17 +248,16 @@ def principled_convert(context):
                     from_socket_normal
                 )
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
-
-            links.new(
-                shader_oct_glossy.outputs[0],
-                to_socket
-            )
+                to_socket = o.to_socket
+            
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_glossy.outputs[0],
+                    to_socket
+                )
             nodes.remove(n)
 
 def glass_convert(context):
@@ -287,17 +276,16 @@ def glass_convert(context):
             shader_oct_glass.location = n_loc_x, n_loc_y
             shader_oct_glass.inputs[1].default_value = n_color
 
-            n_outputs = n.outputs
-            o_links = [o for o in n_outputs]
+            n_outputs = n.outputs[0]
+            o_links = [o for o in n_outputs.links]
             for o in o_links:
-                o_links = o.links
-                for ol in o_links:
-                    to_socket = ol.to_socket
+                to_socket = o.to_socket
 
-            links.new(
-                shader_oct_glass.outputs[0],
-                to_socket
-            )
+            if n_outputs.is_linked:
+                links.new(
+                    shader_oct_glass.outputs[0],
+                    to_socket
+                )
             nodes.remove(n)
 
 class c2oDiffuseConvert(bpy.types.Operator):
@@ -312,8 +300,8 @@ class c2oDiffuseConvert(bpy.types.Operator):
         scenes[0].render.engine = 'octane'
     
         diffuse_convert(self)
-        image_convert(self)
         floatimg_convert(self)
+        image_convert(self)
         glossy_convert(self)
         principled_convert(self)
         glass_convert(self)
