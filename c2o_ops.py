@@ -1,44 +1,53 @@
 import bpy
 import os
 
-
 def diffuse_convert(context):
-    materials = [m for m in bpy.data.materials if m.use_nodes]
-    for m in materials:
-        nodes = m.node_tree.nodes
-        links = m.node_tree.links
-        diff_nodes = [n for n in nodes if n.type == 'BSDF_DIFFUSE']
-        for n in diff_nodes:
-            n_loc_x = n.location.x 
-            n_loc_y = n.location.y
-            n_color = n.inputs[0].default_value
+    c2oSettings = bpy.context.scene.c2oSettings
+    sel_objects = [ob for ob in bpy.context.selected_objects\
+                    if ob.type == 'MESH']
+    for ob in sel_objects:
+        materials = [m for m in bpy.data.materials if m.use_nodes]\
+                    if c2oSettings.mode_select == 'ALL' else\
+                    [m for m in ob.material_slots if m.material.use_nodes]
+        for m in materials:
+            if c2oSettings.mode_select == 'ALL':
+                nodes = m.node_tree.nodes
+                links = m.node_tree.links 
+            elif c2oSettings.mode_select == 'SELECTED':
+                nodes = m.material.node_tree.nodes
+                links = m.material.node_tree.links 
+            diff_nodes = [n for n in nodes if n.type == 'BSDF_DIFFUSE']
+            for n in diff_nodes:
+                n_loc_x = n.location.x  
+                n_loc_y = n.location.y
+                n_color = n.inputs[0].default_value
 
-            shader_oct_diff = nodes.new('ShaderNodeOctDiffuseMat')
-            shader_oct_diff.location = n_loc_x, n_loc_y
-            shader_oct_diff.inputs[0].default_value = n_color
+                shader_oct_diff = nodes.new('ShaderNodeOctDiffuseMat')
+                shader_oct_diff.location = n_loc_x, n_loc_y
+                shader_oct_diff.inputs[0].default_value = n_color
 
-            n_inputs = n.inputs[0]
-            i_links = [i for i in n_inputs.links]
-            for i in i_links:
-                from_socket = i.from_socket
+                n_inputs = n.inputs[0]
+                i_links = [i for i in n_inputs.links]
+                for i in i_links:
+                    from_socket = i.from_socket
 
-            if n_inputs.is_linked:
-                links.new(
-                    shader_oct_diff.inputs[0],
-                    from_socket
-                )
-
-            n_outputs = n.outputs[0]
-            o_links = [o for o in n_outputs.links]
-            for o in o_links:
-                to_socket = o.to_socket
-            
-            if n_outputs.is_linked:
-                links.new(
-                    shader_oct_diff.outputs[0],
-                    to_socket
+                if n_inputs.is_linked:
+                    links.new(
+                        shader_oct_diff.inputs[0],
+                        from_socket
                     )
-            nodes.remove(n)
+
+                n_outputs = n.outputs[0]
+                o_links = [o for o in n_outputs.links]
+                for o in o_links:
+                    to_socket = o.to_socket
+                
+                if n_outputs.is_linked:
+                    links.new(
+                        shader_oct_diff.outputs[0],
+                        to_socket
+                        )
+                nodes.remove(n)
 
 def mixmat_convert(context):
     materials = [m for m in bpy.data.materials if m.use_nodes]
@@ -288,12 +297,24 @@ def glass_convert(context):
                 )
             nodes.remove(n)
 
-class c2oDiffuseConvert(bpy.types.Operator):
-    bl_idname = "c2oconvert.diffuse"
-    bl_label = "C2O Convert Diffuse"
-    bl_description = "C2O Convert Diffuse Shader"
+class c2oConvertAll(bpy.types.Operator):
+    bl_idname = "c2oconvert.all"
+    bl_label = "C2O Convert All"
+    bl_description = "C2O Convert All Material"
     bl_options = {"REGISTER"}
 
+    @classmethod
+    def poll(cls, context):
+        engines = ['CYCLES', 'octane']
+        c2oSettings = bpy.context.scene.c2oSettings
+        if c2oSettings.mode_select == 'SELECTED'\
+                        and not bpy.context.selected_objects:
+            return False
+        if not bpy.context.mode == 'OBJECT':
+            return False
+        if not bpy.context.scene.render.engine in engines:
+            return False
+        return True
 
     def execute(self, context):
         scenes = bpy.data.scenes
@@ -328,17 +349,3 @@ class c2oDiffuseConvert(bpy.types.Operator):
 
 
         return {"FINISHED"}
-
-
-def register():
-    from bpy.utils import register_class
-
-    register_class(c2oDiffuseConvert)
-
-def unregister():
-    from bpy.utils import unregister_class
-
-    unregister_class(c2oDiffuseConvert)
-
-if __name__ == "__main__":
-    register()
