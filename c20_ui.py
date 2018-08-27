@@ -12,15 +12,23 @@ class c2oPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        c2oSettings = bpy.context.scene.c2oSettings
         col = box.column(align=True)
-        col.prop(
-            c2oSettings,
-            "mode_select",
-            text = ''
-        )
         col.operator(
-            "c2oconvert.all",
+            "c2oconvert.diffuse",
             text="Convert",
             icon="ALIGN"
         )
+
+
+def register():
+    from bpy.utils import register_class
+
+    register_class(c2oPanel)
+
+def unregister():
+    from bpy.utils import unregister_class
+
+    unregister_class(c2oPanel)
+
+if __name__ == "__main__":
+    register()
