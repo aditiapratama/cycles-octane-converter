@@ -120,7 +120,7 @@ def floatimg_convert(context):
         nodes = m.node_tree.nodes
         links = m.node_tree.links
         floatimg_nodes = [n for n in nodes if n.type == 'TEX_IMAGE'\
-                    and n.color_space == 'NONE']
+                    and n.color_space == 'NONE' and n.image.alpha_mode == 'NONE']
         for n in floatimg_nodes:
             n_loc_x = n.location.x 
             n_loc_y = n.location.y
